@@ -1,22 +1,35 @@
-import React from 'react';
-import 'tailwindcss/tailwind.css'; // Import Tailwind CSS
-import 'daisyui/dist/full.css'; // Import DaisyUI styles
-import { Container } from './styles';
+import React, { useState } from 'react';
 
-function Card({ anime, onClick = () => {} }) {
+function Card({ anime, onClick }) {
+  const { title, img_url, aired, score } = anime;
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  if (imageError) {
+    return null;
+  }
+  const formattedScore = score ? score.toFixed(1) : score;
+
+  const airedAndScore = `Aired: ${aired} | Score: ${formattedScore}`;
+
   return (
-    <Container>
-      <div className="card">
-        <button onClick={onClick} className="card-body">
-          <img
-            alt={anime.title} // Use the anime name from the database as the alt attribute
-            src={anime.img_url}
-            className="rounded-lg"
-          />
-          <h2 className="text-lg font-semibold">{anime.title}</h2>
-        </button>
+    <div className="card bg-base-100 shadow-lg">
+      <figure>
+        <img src={img_url} alt={title} onError={handleImageError} />
+      </figure>
+      <div className="card-body">
+        <h2 className="card-title">{title}</h2>
+        <p>{airedAndScore}</p>
+        <div className="card-actions justify-end">
+          <button className="btn btn-primary" onClick={() => onClick(anime)}>
+            MORE INFO
+          </button>
+        </div>
       </div>
-    </Container>
+    </div>
   );
 }
 

@@ -1,14 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Logo, Main, RightSide, MenuButton, MenuOptions, VerticalMenu, Buttons, SearchInput, AvatarMenu } from './styles';
+import { FaBars, FaSearch, FaUserCircle } from 'react-icons/fa';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Logo,
+  Main,
+  RightSide,
+  MenuButton,
+  MenuOptions,
+  VerticalMenu,
+  Buttons,
+  SearchInput,
+  AvatarMenu
+} from './styles';
 
-function Navbar() {
+function Navbar({ onSearch, onLogout }) {
   const menuRef = useRef();
   const profileMenuRef = useRef();
   const searchRef = useRef();
   const [showMenu, setShowMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const [opacity, setOpacity] = useState(0);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.addEventListener('mousedown', handleClick);
@@ -21,12 +37,20 @@ function Navbar() {
   }, []);
 
   function handleScroll() {
-    if (opacity === 0 && window.scrollY > 10) {
+    if (window.scrollY > 10) {
       setOpacity(1);
-    } else if (opacity === 1 && window.scrollY < 10) {
+    } else {
       setOpacity(0);
     }
   }
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   function handleClick(event) {
     if (showMenu && !menuRef.current.contains(event.target)) {
@@ -41,75 +65,87 @@ function Navbar() {
   }
 
   function toggleProfileMenu() {
-    setShowProfileMenu(prevShowProfileMenu => !prevShowProfileMenu);
+    setShowProfileMenu((prevShowProfileMenu) => !prevShowProfileMenu);
   }
 
   function handleSearchClick() {
     setShowSearch(true);
   }
 
+  function handleSearchChange(event) {
+    setSearchValue(event.target.value);
+  }
+
+  function handleSearchSubmit(event) {
+    // prevent the page from refreshing
+    event.preventDefault();
+
+    // perform the search
+    onSearch(searchValue);
+  }
+
+  function handleLogout() {
+    onLogout(); // Call the logout function from the parent component
+    navigate('/login'); // Redirect to the login page
+  }
+
   return (
-    <Container opacity={opacity}>
+    <Container opacity={opacity} className="navbar bg-base-100">
       <Main>
         <div ref={menuRef}>
-          <MenuButton onClick={() => setShowMenu(!showMenu)}>
-            <i className="text-white fa fa-bars" style={{ fontSize: 'max(2rem, 2vw)' }} />
+          <MenuButton onClick={() => setShowMenu(!showMenu)} className="btn btn-ghost normal-case text-xl">
+            <FaBars className="text-white" style={{ fontSize: 'max(2rem, 2vw)' }} />
           </MenuButton>
-          <MenuOptions hide={!showMenu}>
+          <MenuOptions hide={!showMenu} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
             <section>
-              <a href="/">Account</a>
+              <a href="/" className="justify-between">
+                Account
+              </a>
               <a href="/">Help Center</a>
               <a href="/">Sign out</a>
             </section>
           </MenuOptions>
         </div>
         <Logo to="/" title="AnimeHub">
-          <span style={{ color: '#e50914', fontSize: '2rem', fontWeight: 'bold', marginLeft: '1rem' }}>
-            ANIMEHUB
-          </span>
+          <span className="text-red-500 text-2xl font-bold ml-4">AnimeHub</span>
         </Logo>
-        <VerticalMenu>
-          <a href="/">Home</a>
-          <a href="/">My List</a>
+        <VerticalMenu className="text-white">
+          <Link to="/">Home</Link>
+          {location.pathname !== '/favorites' && <Link to="/favorites">Favorites</Link>}
         </VerticalMenu>
       </Main>
       <RightSide>
         {!showSearch && (
           <div className="relative" ref={searchRef}>
             <button className="btn btn-ghost btn-circle" onClick={handleSearchClick}>
-              <i className="fa fa-search text-white" style={{ fontSize: '1.5rem' }} />
+              <FaSearch className="text-white" style={{ fontSize: '1.5rem' }} />
             </button>
           </div>
         )}
         {showSearch && (
-          <SearchInput
-            type="text"
-            placeholder="Search"
-            className="input input-bordered w-24 md:w-auto"
-            onBlur={() => setShowSearch(false)}
-            autoFocus
-          />
+          <form onSubmit={handleSearchSubmit}>
+            <SearchInput
+              value={searchValue}
+              onChange={handleSearchChange}
+              type="text"
+              placeholder="Search"
+              className="input input-bordered w-24 md:w-auto"
+              onBlur={() => setShowSearch(false)}
+              autoFocus
+            />
+          </form>
         )}
         <Buttons>
           <div ref={profileMenuRef} className="dropdown dropdown-end">
             <label tabIndex={0} className="btn btn-ghost btn-circle avatar" onClick={toggleProfileMenu}>
               <div className="w-10 rounded-full">
-                <img src="/images/stock/photo-1534528741775-53994a69daeb.jpg" alt="Profile" />
+                <FaUserCircle className="text-white" style={{ fontSize: '1.5rem' }} />
               </div>
             </label>
             {showProfileMenu && (
               <AvatarMenu className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                 <li>
-                  <a href="/" className="justify-between">
-                    Profile
-                    <span className="badge">New</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="/">Settings</a>
-                </li>
-                <li>
-                  <a href="/">Logout</a>
+                  <button onClick={handleLogout}>Logout</button>
                 </li>
               </AvatarMenu>
             )}

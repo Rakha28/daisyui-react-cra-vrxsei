@@ -120,4 +120,15 @@ export const Buttons = styled.div`
 
 export const AvatarMenu = styled.ul`
   @apply mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52;
+
+  /* Add the following styles */
+  background: #000;
+
+  a {
+    color: #fff;
+
+    &:hover {
+      background-color: #333;
+    }
+  }
 `;
